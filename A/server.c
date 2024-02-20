@@ -117,6 +117,7 @@ void remove_from_clientFDs(int clientFD, int index, int client_exited)
     else perror("index does not match the clientFDs array\n");
 }
 
+// Deals with sending a message to all clients
 void send_all(char* message, int clientSocket, int placementInServer)
 {
     pthread_mutex_lock(&send_all_lock);
@@ -130,6 +131,7 @@ void send_all(char* message, int clientSocket, int placementInServer)
     pthread_mutex_unlock(&send_all_lock);
 }
 
+// Function to close the client gracefully
 void close_client_gracefully(void* args)
 {
     struct HandleClientArgs* actualArgs = (struct HandleClientArgs*)args;
