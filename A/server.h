@@ -31,4 +31,6 @@ void acceptConnections(int serverSocket);
 
 void openTcpServer(int argc, char *const *argv);
 
+void cleanup_and_exit(int signo);
+
 #endif

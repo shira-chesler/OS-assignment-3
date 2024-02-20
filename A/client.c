@@ -23,7 +23,7 @@ void check_operation_same(int result, const char* operation_name, int check_equa
 {
     if (result != check_equal_to) 
     {
-        perror(operation_name);
+        fprintf(stderr, "%s failed\n", operation_name);
         cleanup_and_exit(0);
     }
 }

@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include "server.h"
 #include <math.h>
+#include <signal.h>
 
 #define SERVER_PORT 8090
 
@@ -226,7 +227,7 @@ void acceptConnections(int serverSocket)
         int location_index = add_into_clientFDs(clientFD);
         clientFDsAdded++;
 
-        printf("New client accepted.\n");
+        printf("\nNew client accepted.\n");
         printf("Client details:\n");
 
         char clientIP[INET_ADDRSTRLEN];
@@ -277,8 +278,25 @@ void openTcpServer(int argc, char *const *argv)
     free(clientFDs);
 }
 
+// Function to cleanup and exit the server
+void cleanup_and_exit(int signo)
+{
+    char* message = "\nServer is shutting down, bye bye! (recv is going to fail)\n";
+    for(int i = 0; i < clientFDsSize; i++)
+    {
+        if(clientFDs[i] != -1)
+        {
+            send_to(clientFDs[i], message, i);
+            close(clientFDs[i]);
+        }
+    }
+    free(clientFDs);
+    exit(0);
+}
+
 int main(int argc, char *const *argv) 
 {
+    signal(SIGINT, cleanup_and_exit);
     openTcpServer(argc, argv);
     return 0;
 }
