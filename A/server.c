@@ -19,8 +19,8 @@ int clientFDsAdded = 0;
 
 // struct to pass the arguments to the thread
 struct HandleClientArgs {
-    int* clientFD;
-    int* placementInServer;
+    int clientFD;
+    int placementInServer;
 };
 
 // Function to check for errors in socket operations
@@ -135,10 +135,11 @@ void send_all(char* message, int clientSocket, int placementInServer)
 void close_client_gracefully(void* args)
 {
     struct HandleClientArgs* actualArgs = (struct HandleClientArgs*)args;
-    int clientSocket = *(actualArgs->clientFD);
-    int placementInServer = *(actualArgs->placementInServer);
+    int clientSocket = actualArgs->clientFD;
+    int placementInServer = actualArgs->placementInServer;
     remove_from_clientFDs(clientSocket, placementInServer, 1);
     free(args);
+    printf("Client has been removed %d\n", clientSocket);
     pthread_exit(EXIT_SUCCESS);
 }
 
@@ -146,8 +147,8 @@ void close_client_gracefully(void* args)
 void* handleClient(void* args) 
 {
     struct HandleClientArgs* actualArgs = (struct HandleClientArgs*)args;
-    int clientSocket = *(actualArgs->clientFD);
-    int placementInServer = *(actualArgs->placementInServer);
+    int clientSocket = actualArgs->clientFD;
+    int placementInServer = actualArgs->placementInServer;
 
     char* message;
     message = "Welcome! You have connected to the chat! Now you may send messages!\n";
@@ -163,9 +164,9 @@ void* handleClient(void* args)
         else
         {
             int client_size = floor(log10(abs(clientSocket)) + 1);
-            char* new_message = malloc(strlen(message) + client_size + 15);
+            char* new_message = malloc(strlen(message) + client_size + 20);
             strcat(new_message, "Client ");
-            sprintf(new_message, "%d", clientSocket);
+            sprintf(new_message + 7, "%d", clientSocket);
             strcat(new_message, ": ");
             strcat(new_message, message);
             send_all(new_message, clientSocket, placementInServer);
@@ -240,8 +241,8 @@ void acceptConnections(int serverSocket)
         // Handle client in a new thread
         pid_t pid;
         struct HandleClientArgs* args = malloc(sizeof(struct HandleClientArgs));
-        args->clientFD = &clientFD;
-        args->placementInServer = &location_index;
+        args->clientFD = clientFD;
+        args->placementInServer = location_index;
 
         pthread_t thread;
         if(pthread_create(&thread, NULL, handleClient, args) != 0) 
